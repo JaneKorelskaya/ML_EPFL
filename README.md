@@ -1,1 +1,2 @@
-# ML_EPFL
+# ML EPFL
+Fall semester projects 2022
