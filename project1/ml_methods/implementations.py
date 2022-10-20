@@ -24,7 +24,7 @@ def batch_iter(y, tx, batch_size, num_batches=1, shuffle=True):
         end_index = min((batch_num + 1) * batch_size, data_size)
         if start_index != end_index:
             yield shuffled_y[start_index:end_index], shuffled_tx[start_index:end_index]
-
+#MSE loss
 def compute_loss(y, tx, w):
     e = y - tx.dot(w)
     loss = e.T.dot(e) / y.shape[0]
@@ -72,3 +72,75 @@ def ridge_regression(y, tx, lambda_):
     w = np.linalg.solve(tx.T@tx + lambda_1 * np.identity(tx.T.shape[0]), tx.T@y)
     loss = compute_loss(y, tx, w)
     return w, loss
+
+#Logistic regression GD
+
+def sigmoid(t):
+    return 1 / (1 + np.exp(-t))
+
+#Negative log likelihood
+def calculate_loss(y, tx, w):
+    assert y.shape[0] == tx.shape[0]
+    assert tx.shape[1] == w.shape[0]
+
+    p = sigmoid(tx@w)
+    loss = - np.mean(y * np.log(p) + (1 - y) * np.log(1 - p)) 
+    return loss
+
+#Gradient of logloss
+def calculate_gradient(y, tx, w):
+    gradient = (1 / tx.shape[0]) * tx.T@(sigmoid(tx@w) - y)
+    return gradient
+
+#One step of gradient descent using logistic regression
+def learning_by_gradient_descent(y, tx, w, gamma):
+    loss = calculate_loss(y, tx, w)
+    w = w - gamma * calculate_gradient(y, tx, w)
+    return loss, w
+
+
+def logistic_regression(y, tx, initial_w, max_iters, gamma):
+    # init parameters
+    threshold = 1e-8
+    # build tx
+    #tx = np.c_[np.ones((y.shape[0], 1)), x]
+    w = initial_w
+    losses = []
+
+    for iter in range(max_iters):
+        # get loss and update w.
+        loss, w = learning_by_gradient_descent(y, tx, w, gamma)
+        losses.append(loss)
+        if len(losses) > 1 and np.abs(losses[-1] - losses[-2]) < threshold:
+            break
+        return w, loss
+
+#Logistic regression with regularization
+
+#Compute loss and gradient
+def penalized_logistic_regression(y, tx, w, lambda_):
+    loss = calculate_loss(y, tx, w) + lambda_*np.linalg.norm(w)
+    gradient = calculate_gradient(y, tx, w) + 2 * lambda_ * w
+    return loss, gradient
+#Do one step of gradient descent, using the penalized logistic regression.
+def learning_by_penalized_gradient(y, tx, w, gamma, lambda_):
+    loss, gradient = penalized_logistic_regression(y, tx, w, lambda_)
+    w = w - gamma * gradient
+    return loss, w
+
+def reg_logistic_regression(y, tx, lambda_ ,initial_w, max_iters, gamma):
+    # init parameters
+    threshold = 1e-8
+    losses = []
+
+    # build tx
+    #tx = np.c_[np.ones((y.shape[0], 1)), x]
+    w = initial_w
+
+    # start the logistic regression
+    for iter in range(max_iters):
+        # get loss and update w.
+        loss, w = learning_by_penalized_gradient(y, tx, w, gamma, lambda_)
+        losses.append(loss)
+        if len(losses) > 1 and np.abs(losses[-1] - losses[-2]) < threshold:
+            break
