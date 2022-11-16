@@ -37,7 +37,7 @@ def compute_gradient(y, tx, w):
     return gradient
 
 #Least squares GD implementation
-def least_squares_GD(y, tx, initial_w, max_iters, gamma):
+def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
     """Linear regression using gradient descent algorithm.
 
     Args:
@@ -67,7 +67,7 @@ def compute_stoch_gradient(y, tx, w):
     gradient = - (tx.T.dot(e)) / y.shape[0]
     return gradient
 
-def least_squares_SGD(y, tx, initial_w, max_iters, gamma):
+def mean_squared_error_sgd(y, tx, initial_w, max_iters, gamma):
     """Linear regression using stochastic gradient descent algorithm.
 
     Args:
